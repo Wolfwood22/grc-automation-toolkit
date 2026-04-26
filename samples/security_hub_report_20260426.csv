@@ -1,0 +1,19 @@
+AWS Security Hub Compliance Report
+Generated:,2026-04-26 21:25 UTC
+
+SUMMARY
+Total Findings,5
+Critical,2
+High,1
+Medium,1
+Low,1
+Failed Controls,4
+Compliance %,0.0%
+
+FINDINGS DETAIL
+Finding ID,Title,Severity,Status,Resource Type,Resource ID,Description,Created,Updated
+23456789:finding/001,S3 bucket public read access enabled,CRITICAL,FAILED,AwsS3Bucket,my-data-bucket,S3 bucket allows public read access which may expose sensitive data.,2026-04-01T10:00:00Z,2026-04-20T10:00:00Z
+23456789:finding/002,MFA not enabled for root account,CRITICAL,FAILED,AwsAccount,123456789,Root account does not have MFA enabled.,2026-03-15T08:00:00Z,2026-04-18T08:00:00Z
+23456789:finding/003,CloudTrail not enabled in all regions,HIGH,FAILED,AwsCloudTrailTrail,my-trail,"CloudTrail is not enabled in all regions, leaving activity unlogged.",2026-04-10T12:00:00Z,2026-04-10T12:00:00Z
+23456789:finding/004,IAM password policy does not require symbols,MEDIUM,FAILED,AwsIamPasswordPolicy,password-policy,IAM password policy does not require at least one symbol character.,2026-04-05T09:00:00Z,2026-04-05T09:00:00Z
+23456789:finding/005,EC2 instance in public subnet,LOW,WARNING,AwsEc2Instance,i-0abc123,EC2 instance is deployed in a public subnet.,2026-04-12T14:00:00Z,2026-04-12T14:00:00Z
