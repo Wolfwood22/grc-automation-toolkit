@@ -5,3 +5,5 @@ __pycache__/
 grc-env/
 *.csv
 !samples/*.csv
+CLAUDE.md
+GRC-Project-Log.md
