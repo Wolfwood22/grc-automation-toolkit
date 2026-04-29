@@ -1,0 +1,65 @@
+{                                                                             
+    "iam": [
+      {                                                                         
+        "username": "alice.johnson",                                          
+        "finding_type": "stale_account",                                        
+        "severity": "Medium",                                                   
+        "detail": "No login in 127 days"
+      },                                                                        
+      {                                                                         
+        "username": "bob.smith",                                                
+        "finding_type": "admin_without_mfa",                                    
+        "severity": "High",                                                   
+        "detail": "Admin user has no MFA device registered"
+      },                                                                        
+      {
+        "username": "bob.smith",                                                
+        "finding_type": "admin_missing_manager",                                
+        "severity": "Medium",
+        "detail": "Admin user has no Manager tag assigned"                      
+      },                                                                        
+      {
+        "username": "carol.white",                                              
+        "finding_type": "stale_account",                                      
+        "severity": "Medium",                                                   
+        "detail": "No login in 203 days"
+      }                                                                         
+    ],                                                                        
+    "access_analyzer": [
+      {                                                                         
+        "resource_type": "AWS::S3::Bucket",
+        "resource_arn": "arn:aws:s3:::demo-public-bucket",                      
+        "principal": "*",                                                       
+        "access_level": "s3:GetObject",
+        "severity": "High"                                                      
+      },                                                                      
+      {                                                                         
+        "resource_type": "AWS::IAM::Role",                                    
+        "resource_arn":
+  "arn:aws:iam::123456789012:role/demo-cross-account-role",                     
+        "principal": "arn:aws:iam::999999999999:root",
+        "access_level": "sts:AssumeRole",                                       
+        "severity": "Medium"                                                  
+      }                                                                         
+    ],                                                                        
+    "security_hub": [
+  {                                                                         
+    "control_id": "IAM.1",
+    "title": "IAM policies should not allow full \"*\" administrative privileges",                                                                  
+    "severity": "High",
+    "remediation": "Remove IAM policies that allow full administrative privileges and replace with least-privilege alternatives."                    
+  },
+  {                                                                         
+    "control_id": "IAM.5",                                                
+    "title": "MFA should be enabled for all IAM users that have a console password",                                                                    
+    "severity": "Medium",
+        "remediation": "Enable MFA for all IAM users with console access."      
+      },                                                                      
+      {                                                                         
+        "control_id": "IAM.9",
+        "title": "Virtual MFA should be enabled for the root user",             
+        "severity": "High",                                                     
+        "remediation": "Enable MFA on the AWS root account."
+      }                                                                         
+    ]                                                                         
+  }
