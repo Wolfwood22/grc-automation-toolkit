@@ -49,4 +49,3 @@ def collect(iam_client=None):
                 })
 
     return findings
-   

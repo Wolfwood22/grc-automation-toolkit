@@ -54,7 +54,7 @@ def write_report(users, filepath=None):
 
 if __name__ == "__main__":
     users = load_users()
-    print(f"Loaded {len(    users)} users\n")
+    print(f"Loaded {len(     users)} users\n")
     reviewed = review_users(users)
     out = write_report(reviewed)
     print(f"Flagged: {sum(1 for u in reviewed if u['flag'] == 'REVIEW')}")

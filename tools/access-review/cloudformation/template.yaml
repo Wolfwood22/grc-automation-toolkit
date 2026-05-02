@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Automated Access Review — Lambda, S3, IAM Access Analyzer, EventBridge
+
+Parameters:
+  DemoMode:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: When true, Lambda loads mock_findings.json instead of calling AWS APIs
+
+Resources:
+
+  ReportBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "access-review-reports-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: access-review-lambda-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AccessReviewPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:ListUsers
+                  - iam:ListAttachedUserPolicies
+                  - iam:ListMFADevices
+                  - iam:ListUserTags
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - access-analyzer:ListAnalyzers
+                  - access-analyzer:ListFindings
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - securityhub:GetFindings
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::access-review-reports-${AWS::AccountId}/*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/access-review-function:*"
+
+  AccessAnalyzer:
+    Type: AWS::AccessAnalyzer::Analyzer
+    Properties:
+      AnalyzerName: access-review-analyzer
+      Type: ACCOUNT
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/access-review-function
+      RetentionInDays: 30
+
+  AccessReviewFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: LambdaLogGroup
+    Properties:
+      FunctionName: access-review-function
+      Runtime: python3.12
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 300
+      MemorySize: 512
+      Code:
+        S3Bucket: !Sub "access-review-deploy-${AWS::AccountId}"
+        S3Key: lambda.zip
+      Environment:
+        Variables:
+          DEMO_MODE: !Ref DemoMode
+          REPORT_BUCKET: !Sub "access-review-reports-${AWS::AccountId}"
+
+  EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: access-review-weekly
+      Description: Trigger access review Lambda weekly
+      ScheduleExpression: rate(7 days)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt AccessReviewFunction.Arn
+          Id: AccessReviewTarget
+
+  LambdaEventBridgePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AccessReviewFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EventBridgeRule.Arn
+
+Outputs:
+  ReportBucket:
+    Value: !Ref ReportBucket
+    Description: S3 bucket where HTML reports are stored
+  LambdaFunction:
+    Value: !Ref AccessReviewFunction
+    Description: Lambda function name
+  EventBridgeRule:
+    Value: !Ref EventBridgeRule
+    Description: EventBridge rule triggering weekly review
