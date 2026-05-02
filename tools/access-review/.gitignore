@@ -1,2 +1,8 @@
- user_access.csv
- access_review_report_*.csv
+user_access.csv
+access_review_report_*.csv
+lambda.zip
+__pycache__/
+*.pyc
+.pytest_cache/
+response.json
+report.html
