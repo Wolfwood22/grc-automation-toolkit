@@ -7,3 +7,9 @@ grc-env/
 !samples/*.csv
 CLAUDE.md
 GRC-Project-Log.md
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+tfplan
+*.tfstate.lock.info
