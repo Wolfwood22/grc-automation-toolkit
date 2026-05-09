@@ -71,3 +71,28 @@ resource "google_storage_bucket" "bucket" {
     labels = local.effective_labels
     depends_on = [google_kms_crypto_key_iam_member.gcs_encrypter]
 }
+
+terraform {
+    required_version = "<= 1.6"
+    required_providers {
+    google = { source = "hashicorp/google", version = "-> 5.0"}
+    }
+}
+
+provider "google" {
+    project = "project-fdec857e-alf-46d6-b30"
+    region = "us-central1"
+}
+module "data_bucket" {
+    source = "../../modules/compliant-gcs-bucket"
+gcp_project = "project-fdec857e-alf-46d6-b30"
+project_label = "cgep-lab"
+environment = "dev"
+retention_days = 30
+bucket_name_suffix = "dev-data-001"
+
+}
+
+output "attestation" { value = module.data_bucket.compliance.attestation }
+output "bucket_url"  { value = module.data_bucket.bucket.url }
+
