@@ -97,3 +97,97 @@ resource "google_compute_router_nat" "lab05" {
     filter = "ERRORS_ONLY"
   }
 }
+# Control: AC-3 (private nodes, master authorized networks, workload identity)
+#        + SC-28 (database_encryption with KMS)
+#        + CM-6 (STABLE channel, network policy, default pool removed)
+#        + AU-3 (logging_config covers control plane components)
+
+resource "google_container_cluster" "ac3_gke_cluster" {
+  name     = var.cluster_name
+  location = var.zone
+
+  network    = google_compute_network.lab05.id
+  subnetwork = google_compute_subnetwork.lab05.id
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
+  deletion_protection = false
+
+  networking_mode = "VPC_NATIVE"
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
+
+  release_channel {
+    channel = "STABLE"
+  }
+
+  private_cluster_config {
+    enable_private_nodes    = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = "172.16.0.0/28"
+  }
+
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block   = var.authorized_cidr
+      display_name = "lab-operator"
+    }
+  }
+
+  database_encryption {
+    state    = "ENCRYPTED"
+    key_name = google_kms_crypto_key.sc28_gke_secrets.id
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  network_policy {
+    enabled  = true
+    provider = "CALICO"
+  }
+
+  addons_config {
+    network_policy_config {
+      disabled = false
+    }
+  }
+
+  logging_config {
+    enable_components = [
+      "SYSTEM_COMPONENTS",
+      "WORKLOADS",
+      "APISERVER",
+      "CONTROLLER_MANAGER",
+      "SCHEDULER",
+    ]
+  }
+
+  monitoring_config {
+    enable_components = [
+      "SYSTEM_COMPONENTS",
+      "APISERVER",
+      "CONTROLLER_MANAGER",
+      "SCHEDULER",
+      "STORAGE",
+      "HPA",
+      "POD",
+      "DAEMONSET",
+      "DEPLOYMENT",
+      "STATEFULSET",
+    ]
+  }
+
+  resource_labels = merge(
+    local.common_labels,
+    { control_id = "ac-3" }
+  )
+
+  depends_on = [
+    google_kms_crypto_key_iam_member.gke_service_agent_kms,
+  ]
+}
