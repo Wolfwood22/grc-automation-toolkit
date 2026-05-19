@@ -1,0 +1,4 @@
+[
+  "[AC-3] google_compute_firewall.open_ssh: port 22 open to 0.0.0.0/0. Remove or narrow source_ranges.",
+  "[AC-3] google_storage_bucket.bad_public: bucket allows public access. Set uniform_bucket_level_access=true and public_access_prevention=enforced."
+]

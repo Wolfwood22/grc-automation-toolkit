@@ -1,0 +1,3 @@
+[
+  "[CM-6] google_storage_bucket.bad_no_labels: missing required labels [\"compliance_scope\", \"environment\", \"managed_by\", \"project\"]. Add: project, environment,managed_by, compliance_scope."
+]

@@ -1,0 +1,3 @@
+[
+  "[SC-28] google_storage_bucket.bad_no_cmek: missing customer-managed encryption key. Remediation: add encryption { default_kms_key_name = ... }."
+]
